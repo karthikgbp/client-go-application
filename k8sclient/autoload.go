@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	kubernetes "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
 )
 
@@ -35,7 +36,11 @@ func ConnectToK8s() *kubernetes.Clientset {
 	// Create K8s Config
 	config, err := clientcmd.BuildConfigFromFlags("", configPath)
 	if err != nil {
-		log.Fatalln("Failed to Create k8s config", err)
+		log.Println("Failed to Create k8s config - In Local Connection", err)
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			log.Println("Failed to Create k8s config - In Cluster Connection", err)
+		}
 	}
 
 	// Create K8s Client Set
