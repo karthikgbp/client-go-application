@@ -2,7 +2,6 @@ package k8sclient
 
 import (
 	"flag"
-	"fmt"
 )
 
 func CreateJob() {
@@ -14,9 +13,10 @@ func CreateJob() {
 
 	flag.Parse()
 
-	fmt.Printf("Args are %s %s %s \n", *jobName, *containerImage, *entryCmd)
+	// fmt.Printf("\nArgs are %s , %s,  %s,  %s,  \n", *jobNamespace, *jobName, *containerImage, *entryCmd)
 
 	jobSpecDefined := LaunchK8s{ClientSet, jobNamespace, jobName, containerImage, entryCmd}
+	// jobSpecDefined := LaunchK8s{ClientSet, jobName, containerImage, entryCmd}
 	jobSpecDefined.createK8sJob()
 
 }

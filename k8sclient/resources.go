@@ -49,3 +49,19 @@ func ListNamespaces() {
 		}
 	}
 }
+
+func GetNamespaces() []string {
+
+	var nsList []string
+
+	ns, err := ClientSet.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		log.Fatal("Unable to list all Namespaces", err)
+	}
+
+	for _, ns := range ns.Items {
+		nsList = append(nsList, ns.GetName())
+	}
+
+	return nsList
+}

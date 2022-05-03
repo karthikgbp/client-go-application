@@ -22,7 +22,12 @@ func init() {
 // Connect to K8s
 func ConnectToK8s() *kubernetes.Clientset {
 
-	home := os.Getenv("HOME")
+	// home := os.Getenv("HOME")
+
+	home, exists := os.LookupEnv("HOME")
+	if !exists {
+		home = "/root"
+	}
 
 	// fmt.Println("Home directory is ", home)
 
