@@ -9,6 +9,8 @@ RUN go mod download
 
 COPY ./ ./
 
+RUN apk add git
+
 RUN export GOBIN=$PWD
 RUN go build -o /k8s-client
 

@@ -13,6 +13,7 @@ import (
 
 type LaunchK8s struct {
 	ClientSet    *kubernetes.Clientset
+	Namespace    *string
 	JobName      *string
 	Image        *string
 	EntryCommand *string
@@ -22,13 +23,13 @@ type LaunchK8s struct {
 
 func (launch *LaunchK8s) createK8sJob() {
 
-	jobs := launch.ClientSet.BatchV1().Jobs("default")
+	jobs := launch.ClientSet.BatchV1().Jobs(*launch.Namespace)
 	var backOffLimit int32 = 0
 
 	jobSpec := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      *launch.JobName,
-			Namespace: "default",
+			Namespace: *launch.Namespace,
 		},
 		Spec: batchv1.JobSpec{
 			Template: v1.PodTemplateSpec{
