@@ -4,6 +4,7 @@ import (
 	"flag"
 )
 
+// Create Job
 func CreateJob() {
 
 	jobNamespace := flag.String("namespace", "k8s-client-go", "Namespace of the Job")
@@ -13,10 +14,11 @@ func CreateJob() {
 
 	flag.Parse()
 
-	// fmt.Printf("\nArgs are %s , %s,  %s,  %s,  \n", *jobNamespace, *jobName, *containerImage, *entryCmd)
-
-	jobSpecDefined := LaunchK8s{ClientSet, jobNamespace, jobName, containerImage, entryCmd}
-	// jobSpecDefined := LaunchK8s{ClientSet, jobName, containerImage, entryCmd}
+	jobSpecDefined := JobsK8s{ClientSet, jobNamespace, jobName, containerImage, entryCmd}
 	jobSpecDefined.createK8sJob()
 
 }
+
+// Edit Job
+
+// Delete Job

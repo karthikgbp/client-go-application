@@ -25,7 +25,10 @@ func main() {
 	// Create a Job
 	k8sclient.CreateJob()
 
-	// List Resurces
+	// Create Deployments
+	k8sclient.CreateDeployment()
+
+	// List Resources
 
 	// Pods
 	k8sclient.ListPods()

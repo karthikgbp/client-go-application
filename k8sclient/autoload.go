@@ -54,6 +54,7 @@ func ConnectToK8s() *kubernetes.Clientset {
 		log.Fatal("Failed to create Client Set", err)
 	}
 
+	log.Println("<---- Successfully Initialised K8s Connection ---->")
 	return clientSet
 
 }
