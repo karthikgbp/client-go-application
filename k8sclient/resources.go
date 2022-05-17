@@ -27,7 +27,7 @@ func ListPods() {
 
 		// List All Pods
 		for i, pod := range pods.Items {
-			fmt.Println("Pod ", i, " - ", pod.GetName())
+			fmt.Println("Pod ", i, " - ", pod.GetName(), " ;  Pod Lable : ", pod.Labels)
 		}
 	}
 }
@@ -44,8 +44,8 @@ func ListNamespaces() {
 		fmt.Println("No of Namespaces in the Cluster : ", len(ns.Items))
 		for i, ns := range ns.Items {
 			fmt.Println("Namespace :", i, " - ", ns.GetName())
-			fmt.Println("Kind :", i, " - ", ns.Kind)
-			fmt.Println("Object Meta ", i, " - ", ns.ObjectMeta)
+			fmt.Println("Label :", i, " - ", ns.Labels["name"])
+			// fmt.Println("Object Meta ", i, " - ", ns.ObjectMeta)
 		}
 	}
 }
@@ -62,6 +62,5 @@ func GetNamespaces() []string {
 	for _, ns := range ns.Items {
 		nsList = append(nsList, ns.GetName())
 	}
-
 	return nsList
 }

@@ -36,12 +36,10 @@ func ConnectToK8s() *kubernetes.Clientset {
 	fmt.Println("File Path : ", configPath)
 
 	// Create K8s Config
-	// config, err := clientcmd.BuildConfigFromFlags("", configPath)
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		log.Println("Failed to Create k8s config - In Cluster Connection", err)
 		config, err = clientcmd.BuildConfigFromFlags("", configPath)
-		// config, err = rest.InClusterConfig()
 		if err != nil {
 			log.Println("Failed to Create k8s config - In Local Connection", err)
 

@@ -23,18 +23,21 @@ func main() {
 	fmt.Println("Loading from Main ....")
 
 	// Create a Job
-	k8sclient.CreateJob()
+	// k8sclient.CreateJob()
 
 	// Create Deployments
-	k8sclient.CreateDeployment()
+	// k8sclient.CreateDeployment()
 
 	// List Resources
 
 	// Pods
-	k8sclient.ListPods()
+	// k8sclient.ListPods()
 
 	// Namespaces
-	k8sclient.ListNamespaces()
+	// k8sclient.ListNamespaces()
+
+	// Create Informer
+	go k8sclient.CreateInformer()
 
 	//Serve Http
 	router := mux.NewRouter()

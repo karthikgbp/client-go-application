@@ -10,8 +10,8 @@ func CreateDeployment() {
 	replicas := flag.Int("replicas", 1, "No of Replicas")
 	appName := flag.String("appName", "app-in-go-deployment", "App Name")
 	podName := flag.String("podName", "app-in-go-deployment", "Container Image")
-	image := flag.String("imageDeployment", "ubuntu:latest", "Container Image")
-	entryCmd := flag.String("commandDeployment", "", "Command should run inside the container")
+	image := flag.String("imageDeployment", "alpine:3.15.4", "Container Image")
+	entryCmd := flag.String("commandDeployment", "sleep 1800", "Command should run inside the container")
 	serviceName := flag.String("serviceName", "serv-deployement", "Service as Load balancer")
 
 	flag.Parse()

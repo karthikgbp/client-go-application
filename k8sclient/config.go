@@ -11,7 +11,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/informers"
 	kubernetes "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/cache"
 )
 
 type JobsK8s struct {
@@ -104,6 +107,8 @@ func (launch *DeploymentK8s) createK8sDeployment() {
 
 	}
 
+	// Set Deployment Spec
+
 	deployment := ClientSet.AppsV1().Deployments(*launch.Namespace)
 
 	deploymentSpec := &appsv1.Deployment{
@@ -127,18 +132,20 @@ func (launch *DeploymentK8s) createK8sDeployment() {
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{
 						{
-							Name:  *launch.PodName,
-							Image: *launch.Image,
+							Name:    *launch.PodName,
+							Image:   *launch.Image,
+							Command: strings.Split(*launch.EntryCommand, " "),
 							Ports: []v1.ContainerPort{
 								{
 									Name:          "http",
 									Protocol:      v1.ProtocolTCP,
-									ContainerPort: 80,
+									ContainerPort: 8081,
 								},
 							},
 						},
 					},
-					// RestartPolicy: v1.RestartPolicyNever,
+					// ServiceAccountName: *launch.ServiceName,
+					RestartPolicy: v1.RestartPolicyAlways,
 				},
 			},
 		},
@@ -152,7 +159,7 @@ func (launch *DeploymentK8s) createK8sDeployment() {
 
 	log.Println("Successfully Created Deployment :", result.GetObjectMeta().GetName())
 
-	// Defining Service
+	// Set Service Spec
 	service := ClientSet.CoreV1().Services(*launch.Namespace)
 
 	serviceSpec := &v1.Service{
@@ -167,10 +174,10 @@ func (launch *DeploymentK8s) createK8sDeployment() {
 			Type: "ClusterIP",
 			Ports: []v1.ServicePort{
 				{
-					Port: 80,
+					Port: 8081,
 					TargetPort: intstr.IntOrString{
 						Type:   intstr.Int,
-						IntVal: 80,
+						IntVal: 8081,
 					},
 				},
 			},
@@ -191,4 +198,44 @@ func (launch *DeploymentK8s) createK8sDeployment() {
 func int32Ptr(i int32) *int32 {
 	log.Println("Replica Set Value : ", &i)
 	return &i
+}
+
+func createk8sInformer() {
+
+	// factory := informers.NewSharedInformerFactory(ClientSet, 1000000000)
+	factory := informers.NewFilteredSharedInformerFactory(ClientSet, 1000000000, "client-namespace", func(lo *metav1.ListOptions) {
+		// lo.LabelSelector = "component=web"
+		lo.LabelSelector = "name=enabled"
+
+	})
+
+	nsinformer := factory.Core().V1().Namespaces()
+
+	Informer := nsinformer.Informer()
+
+	ch := make(chan struct{})
+
+	defer close(ch)
+
+	// Kubernetes provides a utility to handle API crashes
+	defer runtime.HandleCrash()
+
+	// Start Informer
+	go factory.Start(ch)
+
+	Informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+
+		AddFunc: func(obj interface{}) {
+
+			addObj := obj.(metav1.Object).GetName()
+			log.Println("Object is : ", addObj)
+		},
+
+		// UpdateFunc: func(interface{}, interface{}) { panic("") },
+
+		// DeleteFunc: func(interface{}) { panic("") },
+	})
+
+	// podInformer.Run(ch)
+	<-ch
 }
