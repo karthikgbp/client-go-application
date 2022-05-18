@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"strings"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -16,6 +17,14 @@ import (
 	kubernetes "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 )
+
+// ch = make(chan struct{})
+
+var ch chan struct{}
+
+type NSParams struct {
+	Name string
+}
 
 type JobsK8s struct {
 	ClientSet    *kubernetes.Clientset
@@ -202,20 +211,31 @@ func int32Ptr(i int32) *int32 {
 
 func createk8sInformer() {
 
-	// factory := informers.NewSharedInformerFactory(ClientSet, 1000000000)
-	factory := informers.NewFilteredSharedInformerFactory(ClientSet, 1000000000, "client-namespace", func(lo *metav1.ListOptions) {
+	nsList := []string{"client-namespace", "client-namespace-podb", "client-namespace-podc"}
+
+	ch = make(chan struct{})
+
+	for _, v := range nsList {
+		ns := NSParams{"name=" + v}
+		ns.WatchNamespace()
+	}
+
+	<-ch
+
+	defer close(ch)
+}
+
+func (s *NSParams) WatchNamespace() <-chan struct{} {
+
+	factory := informers.NewFilteredSharedInformerFactory(ClientSet, time.Second*4, metav1.NamespaceAll, func(lo *metav1.ListOptions) {
 		// lo.LabelSelector = "component=web"
-		lo.LabelSelector = "name=enabled"
+		lo.LabelSelector = s.Name
 
 	})
 
 	nsinformer := factory.Core().V1().Namespaces()
 
 	Informer := nsinformer.Informer()
-
-	ch := make(chan struct{})
-
-	defer close(ch)
 
 	// Kubernetes provides a utility to handle API crashes
 	defer runtime.HandleCrash()
@@ -228,14 +248,32 @@ func createk8sInformer() {
 		AddFunc: func(obj interface{}) {
 
 			addObj := obj.(metav1.Object).GetName()
-			log.Println("Object is : ", addObj)
+			log.Println("Added New Namespace to Watchlist : ", addObj)
 		},
 
-		// UpdateFunc: func(interface{}, interface{}) { panic("") },
+		UpdateFunc: func(old interface{}, new interface{}) {
 
-		// DeleteFunc: func(interface{}) { panic("") },
+			newOne := new.(*v1.Namespace)
+			oldOne := old.(*v1.Namespace)
+
+			// fmt.Println("New One :", newOne.ResourceVersion)
+			// fmt.Println("Old One :", oldOne.ResourceVersion)
+
+			if newOne.ResourceVersion != oldOne.ResourceVersion {
+				updatedObj := new.(metav1.Object).GetName()
+				log.Println("Object Has been Updated : ", updatedObj)
+			}
+
+		},
+
+		DeleteFunc: func(obj interface{}) {
+
+			delObj := obj.(metav1.Object).GetName()
+			log.Println("Deleted Namespace from Watchlist : ", delObj)
+
+		},
 	})
 
-	// podInformer.Run(ch)
-	<-ch
+	return ch
+
 }
