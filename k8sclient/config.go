@@ -209,9 +209,7 @@ func int32Ptr(i int32) *int32 {
 	return &i
 }
 
-func createk8sInformer() {
-
-	nsList := []string{"client-namespace", "client-namespace-podb", "client-namespace-podc"}
+func createk8sInformer(nsList []string) {
 
 	ch = make(chan struct{})
 
