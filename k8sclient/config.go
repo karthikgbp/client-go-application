@@ -225,14 +225,16 @@ func createk8sInformer(nsList []string) {
 
 func (s *NSParams) WatchNamespace() <-chan struct{} {
 
-	factory := informers.NewFilteredSharedInformerFactory(ClientSet, time.Second*4, metav1.NamespaceAll, func(lo *metav1.ListOptions) {
-		// lo.LabelSelector = "component=web"
-		lo.LabelSelector = s.Name
+	// Deprecated Method
+	// factory := informers.NewFilteredSharedInformerFactory(ClientSet, time.Second*4, metav1.NamespacePublic, func(opts *metav1.ListOptions) {
+	// 	// opts.LabelSelector = "component=web"
+	// 	// opts.LabelSelector = s.Name
+	// })
 
-	})
-
+	// Working Method
+	labelOptions := informers.WithTweakListOptions(func(opts *metav1.ListOptions) { opts.LabelSelector = "" })
+	factory := informers.NewSharedInformerFactoryWithOptions(ClientSet, time.Second*4, informers.WithNamespace(""), labelOptions)
 	nsinformer := factory.Core().V1().Namespaces()
-
 	Informer := nsinformer.Informer()
 
 	// Kubernetes provides a utility to handle API crashes
@@ -244,7 +246,6 @@ func (s *NSParams) WatchNamespace() <-chan struct{} {
 	Informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 
 		AddFunc: func(obj interface{}) {
-
 			addObj := obj.(metav1.Object).GetName()
 			log.Println("Added New Namespace to Watchlist : ", addObj)
 		},

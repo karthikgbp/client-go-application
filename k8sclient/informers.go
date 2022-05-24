@@ -2,18 +2,18 @@ package k8sclient
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 )
 
 func CreateInformer() {
 
-	nsList := readNSList_file()
+	// nsList := readNSList_file()
 
-	fmt.Println(nsList)
+	// fmt.Println(nsList)
 
-	// nsList := []string{"client-namespace", "client-namespace-podb", "client-namespace-podc"}
+	nsList := []string{"client-namespace", "client-namespace-podb", "client-namespace-podc"}
+	// nsList := []string{"client-namespace"}
 
 	createk8sInformer(nsList)
 }
