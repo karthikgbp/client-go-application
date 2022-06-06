@@ -14,6 +14,10 @@ func init() {
 
 }
 
+type Object struct {
+	ObjType string
+}
+
 func ListPods() {
 
 	// List all Pods
@@ -63,4 +67,40 @@ func GetNamespaces() []string {
 		nsList = append(nsList, ns.GetName())
 	}
 	return nsList
+}
+
+func ListUserDefNSLabels(uD string) map[string]string {
+
+	var nsLabel = make(map[string]string)
+
+	// ns, err := ClientSet.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+	ns, err := ClientSet.CoreV1().Namespaces().Get(context.TODO(), uD, metav1.GetOptions{})
+
+	if err != nil {
+		log.Println("Unable to list all Namespaces", err)
+	}
+
+	// fmt.Println(ns.GetLabels())
+
+	for k, val := range ns.GetLabels() {
+
+		if k == "kubernetes.io/metadata.name" {
+			continue
+		}
+		nsLabel[k] = val
+
+	}
+
+	return nsLabel
+}
+
+func DeleteNamespace(ns string) bool {
+
+	err := ClientSet.CoreV1().Namespaces().Delete(context.TODO(), ns, metav1.DeleteOptions{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return true
 }

@@ -209,12 +209,12 @@ func int32Ptr(i int32) *int32 {
 	return &i
 }
 
-func createk8sInformer(nsList []string) {
+func createk8sInformer(systemDefinedNS []string, userDefinedNSLabel []string) {
 
 	ch = make(chan struct{})
 
-	for _, v := range nsList {
-		ns := NSParams{"name=" + v}
+	for _, uD := range userDefinedNSLabel {
+		ns := NSParams{"name=" + uD}
 		ns.WatchNamespace()
 	}
 
@@ -231,8 +231,11 @@ func (s *NSParams) WatchNamespace() <-chan struct{} {
 	// 	// opts.LabelSelector = s.Name
 	// })
 
+	// Check Label
+	// ns := ClientSet.CoreV1().Namespaces().List(metav1.LabelSelector)
+
 	// Working Method
-	labelOptions := informers.WithTweakListOptions(func(opts *metav1.ListOptions) { opts.LabelSelector = "" })
+	labelOptions := informers.WithTweakListOptions(func(opts *metav1.ListOptions) { opts.LabelSelector = s.Name })
 	factory := informers.NewSharedInformerFactoryWithOptions(ClientSet, time.Second*4, informers.WithNamespace(""), labelOptions)
 	nsinformer := factory.Core().V1().Namespaces()
 	Informer := nsinformer.Informer()
